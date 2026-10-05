@@ -1,0 +1,4 @@
+.env
+*.log
+data/events.jsonl
+__pycache__/
