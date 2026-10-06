@@ -1,0 +1,7 @@
+# The Streamlit version lives in the same repository; Vercel only needs public/ and api/.
+/agent
+/indexing
+/search
+/web
+/data
+/requirements.txt

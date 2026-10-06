@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Recall</title>
+<meta name="description" content="Find a photo from what you remember about it, even if that isn't much.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f9fc; --card:#ffffff; --low:#f2f4f7; --mid:#eceef1; --high:#e6e8eb; --line:#c3c6d6;
+  --ink:#191c1e; --ink2:#424654; --ink3:#505f75;
+  --blue:#0b57d0; --blue-d:#0041a2; --chip:#d1e1fb; --chip-ink:#0c1c2f; --tint:#e8f0fe;
+  --green:#006f2c; --green-bg:#e6f4ea; --amber:#fbbc04; --amber-bg:#fef7e0; --amber-ink:#5f4b00;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"DM Sans",Arial,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);box-shadow:0 1px 8px rgba(0,0,0,.05)}
+.bar4{display:flex;height:4px}.bar4 i{flex:1}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 6px}
+.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:500}
+.mark{width:32px;height:32px;border-radius:10px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center}
+.topr{display:flex;align-items:center;gap:8px}
+.pill{background:var(--high);color:var(--ink3);border-radius:999px;padding:5px 12px;font-size:14px;font-weight:500;white-space:nowrap}
+.link{white-space:nowrap;color:var(--blue-d);font-weight:500;font-size:14px;border-radius:999px;padding:10px 12px;display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.link:hover{background:var(--tint)}
+.steps{display:flex;align-items:center;gap:8px;padding:4px 0 12px}
+.step{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:14px;font-weight:500;color:var(--ink2)}
+.step b{width:22px;height:22px;border-radius:50%;background:var(--high);color:var(--ink2);display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.step.on{color:var(--ink)} .step.on b{background:var(--blue);color:#fff}
+.step.done b{background:var(--chip);color:var(--blue-d)}
+.step span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash{height:2px;width:24px;background:var(--high);flex:none}
+
+main{padding:28px 0 64px}
+.card{background:var(--card);border-radius:20px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:20px}
+h1{font-size:40px;line-height:1.15;font-weight:500;letter-spacing:-.4px;margin:0 0 12px;text-align:center}
+h2{font-size:20px;font-weight:500;margin:0}
+h3{font-size:20px;font-weight:500;margin:0}
+.sub{color:var(--ink2);font-size:18px;text-align:center;max-width:620px;margin:0 auto 28px}
+.hero{max-width:760px;margin:24px auto 0}
+.ask{padding:20px}
+.ask textarea{width:100%;border:0;resize:none;font-size:18px;line-height:1.5;min-height:84px;background:transparent}
+.ask textarea::placeholder{color:#737785}
+.ask textarea:focus{outline:none}
+.askrow{display:flex;justify-content:flex-end;align-items:center;gap:12px}
+.hint{color:var(--ink2);font-size:14px;margin-right:auto}
+.btn{background:var(--blue);color:#fff;border-radius:999px;padding:12px 24px;font-weight:500;display:inline-flex;align-items:center;gap:8px;min-height:48px}
+.btn:hover{background:var(--blue-d)} .btn[disabled]{opacity:.6;cursor:wait}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)} .btn.ghost:hover{background:var(--low)}
+.btn.soft{background:var(--high);color:var(--ink)} .btn.soft:hover{background:#e0e3e6}
+.cap{font-size:14px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:var(--ink2);margin:28px 4px 10px;display:flex;justify-content:space-between}
+.cap em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:400}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ex button{background:var(--card);border-radius:999px;padding:12px 18px;text-align:left;font-size:16px;font-weight:500;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(0,0,0,.05);min-height:52px}
+.ex button:hover{background:var(--tint)}
+.ex .dot{width:32px;height:32px;border-radius:50%;background:var(--chip);color:var(--blue-d);display:flex;align-items:center;justify-content:center;flex:none}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.strip img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;display:block;background:var(--mid)}
+.note{display:flex;gap:10px;align-items:flex-start;justify-content:center;color:var(--ink2);font-size:14px;margin-top:24px;text-align:center}
+
+.uhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.uhead h2{display:flex;align-items:center;gap:8px}
+.uhead h2 .ic{color:var(--blue-d)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);color:var(--chip-ink);border-radius:999px;padding:6px 6px 6px 14px;font-size:15px;font-weight:500}
+.chip small{font-size:14px;color:var(--ink3);font-weight:500}
+.chip button{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.chip button:hover{background:rgba(0,0,0,.1)} .chip .ic{width:14px;height:14px}
+.chip.plain{padding:6px 14px;background:var(--high)}
+.add{display:flex;gap:8px;margin-top:14px}
+.add input{flex:1;min-width:0;border:1px solid var(--line);border-radius:999px;padding:10px 18px;background:var(--card)}
+.banner{border-radius:16px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;font-size:16px}
+.banner.blue{background:var(--tint);color:#0c1c2f}
+.banner.amber{background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber-ink)}
+.banner.grey{background:var(--high)}
+.banner img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex:none}
+.banner .link{margin-left:auto;flex:none}
+
+.ghead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.gtitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.best{background:var(--green);color:#fff;border-radius:999px;padding:3px 12px;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.best .ic{width:14px;height:14px}
+.gmeta{color:var(--ink2);font-size:14px;display:flex;gap:8px;align-items:center}
+.gmeta i{width:4px;height:4px;border-radius:50%;background:var(--line)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tile{background:var(--low);border-radius:14px;padding:8px;transition:transform .15s}
+.tile:hover{transform:translateY(-2px)}
+.ph{position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:var(--mid)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.over{position:absolute;inset:0;background:rgba(25,28,30,.38);display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px;opacity:0;transition:opacity .15s}
+.tile:hover .over,.tile:focus-within .over{opacity:1}
+.act{border-radius:999px;padding:8px 10px;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;width:100%}
+.act .ic{width:16px;height:16px}
+.act.yes{background:var(--green);color:#fff} .act.near{background:#fff;color:var(--ink)}
+.why{font-size:14px;color:var(--ink2);margin:8px 2px 2px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px}
+.under{display:none;gap:6px;margin-top:6px}
+.foot{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:8px}
+.foot .btn{width:100%;justify-content:center;border-radius:16px;min-height:52px}
+.foot p{color:var(--ink3);font-size:14px;margin:0}
+.dim{opacity:.4;pointer-events:none}
+
+.q{border:2px solid var(--blue)}
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;color:var(--ink2);font-size:14px}
+.qtag{background:var(--chip);color:var(--blue-d);border-radius:999px;padding:4px 12px;font-weight:500}
+.q h2{font-size:24px;display:flex;gap:12px;align-items:center;margin-bottom:16px}
+.qmark{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.opt{background:var(--low);border:1px solid transparent;border-radius:16px;padding:18px;font-size:18px;font-weight:500;text-align:left;min-height:64px}
+.opt:hover{background:var(--tint);border-color:var(--blue)}
+.opt.unsure{color:var(--ink2)}
+
+.found{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.found img{width:100%;max-height:520px;object-fit:contain;border-radius:16px;display:block;background:var(--mid)}
+.ok{display:inline-flex;align-items:center;gap:8px;background:var(--green-bg);color:var(--green);border-radius:999px;padding:6px 16px;font-weight:700;font-size:18px}
+.found p{color:var(--ink2);margin:12px 0}
+.rowb{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.gone h2{font-size:24px;margin-bottom:8px}
+.gone p{color:var(--ink2);margin:0 0 14px;max-width:720px}
+.eps{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.eps button{background:var(--low);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:500}
+.eps button:hover{background:var(--tint)}
+.load{text-align:center;color:var(--ink2);padding:80px 0}
+
+@media (hover:none){
+  .over{display:none} .under{display:flex;flex-direction:column}
+  .tile:hover{transform:none}
+}
+@media (max-width:760px){
+  .wrap{padding:0 16px} h1{font-size:30px} .sub{font-size:16px}
+  .grid{grid-template-columns:repeat(2,1fr)} .ex{grid-template-columns:1fr}
+  .pill{display:none} .found{grid-template-columns:1fr} .dash{width:10px}
+  .card{padding:16px;border-radius:16px}
+  .over{display:none} .under{display:flex;flex-direction:column} h2,h3{font-size:18px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-tune" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+  <symbol id="i-restart" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4h4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.700M12 17h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="15.500" cy="9.500" r="1.200"/></symbol>
+</svg>
+
+<header>
+  <div class="bar4"><i style="background:#4285F4"></i><i style="background:#EA4335"></i><i style="background:#FBBC05"></i><i style="background:#34A853"></i></div>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand"><span class="mark"><svg class="ic"><use href="#i-img"/></svg></span>Photo Recall</div>
+      <div class="topr">
+        <span class="pill" id="libpill">Sample library</span>
+        <button class="link" id="restart" type="button"><svg class="ic"><use href="#i-restart"/></svg>Start over</button>
+      </div>
+    </div>
+    <nav class="steps" id="steps" aria-label="Progress"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="view"><p class="load">Loading the sample library…</p></main>
+
+<script src="recall.js"></script>
+<script>
+(function () {
+  "use strict";
+  var PAGE = 12, MAX_QUESTIONS = 3, MAX_PER_EPISODE = 4;
+  var EXAMPLES = ["the day at the water park", "a menu card I photographed", "a lecture slide about bending metal", "friends at a historic palace in 2023"];
+  var L = null, S = null, SID = Math.random().toString(16).slice(2, 10), ATTEMPT = 0, EVENTS = [];
+  var view = document.getElementById("view");
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ic(n) { return '<svg class="ic" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
+  function thumb(id) { return "thumbs/" + encodeURIComponent(id) + ".jpg"; }
+
+  /* Events map onto the funnel. They carry ids, clue types and counts only: never captions or what was typed. */
+  function log(type, payload) {
+    try {
+      var ev = { event_id: Math.random().toString(16).slice(2, 14), session_id: SID, attempt: ATTEMPT, ts: new Date().toISOString().slice(0, 19), type: type, payload: payload || {} };
+      EVENTS.push(ev);
+      fetch("api/log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ events: [ev] }), keepalive: true }).catch(function () {});
+    } catch (e) { /* logging must never break the flow */ }
+  }
+
+  function reset(abandon) {
+    if (abandon && S && S.turns && !S.found) log("attempt_abandoned", { turn: S.turns, reason: "started_over" });
+    ATTEMPT += 1;
+    S = { clues: Recall.empty(), rejected: {}, near: null, turns: 0, asked: {}, questions: 0, question: null, found: null,
+      notes: [], results: [], pool: [], t0: null, misses: 0, more: 0, gaveUp: false, relaxed: null, busy: false, adding: false, steered: false };
+  }
+
+  function runSearch() {
+    var ranked = L.search(S.clues, S.rejected, S.near);
+    S.pool = ranked.slice(0, 40).map(function (r) { return r.photo; }).filter(function (p) { return !S.rejected[p.photo_id]; });
+    var perEp = {}, page = [], want = PAGE + S.more * PAGE;
+    for (var i = 0; i < ranked.length && page.length < want; i++) {     // keep one occasion from crowding out the others
+      var e = ranked[i].photo.episode_id;
+      if ((perEp[e] || 0) >= MAX_PER_EPISODE && page.length < PAGE) continue;
+      perEp[e] = (perEp[e] || 0) + 1;
+      page.push(ranked[i]);
+    }
+    S.results = page;
+    log("results_shown", { photo_ids: page.map(function (r) { return r.photo.photo_id; }), turn: S.turns });
+  }
+
+  function parse(text) {
+    var compact = {};
+    Object.keys(S.clues).forEach(function (k) { if (k !== "expanded" && Recall.has(S.clues[k])) compact[k] = S.clues[k]; });
+    return fetch("api/parse", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text, state: compact }) })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) { if (!j || j.degraded || !j.delta) throw 0; return j; })
+      .catch(function () { return { delta: Recall.localParse(text), meta: { intent: "search", degraded: true } }; });
+  }
+
+  function submit(text) {
+    text = String(text || "").trim().slice(0, 400);
+    if (!text || S.busy) return;
+    if (Recall.isVague(text, S.clues)) {
+      S.notes = ["What do you remember about it: where you were, who was there, what was in it, or what it was for?"];
+      return render();
+    }
+    S.busy = true; S.pending = text; render();
+    parse(text).then(function (out) {
+      var meta = out.meta || {};
+      S.busy = false; S.pending = ""; S.notes = []; S.adding = false;
+      if (meta.intent === "vague") { S.notes.push("What do you remember about it: where you were, who was there, what was in it, or what it was for?"); return render(); }
+      if (meta.intent === "other") { S.notes.push("I can only help you find a photo in this library. Tell me what you remember about the one you want."); return render(); }
+      if (S.turns === 0) { S.t0 = Date.now(); log("attempt_started"); }
+      S.turns += 1;
+      var before = Recall.clueTypes(S.clues);
+      S.clues = Recall.merge(S.clues, out.delta);
+      S.more = 0; S.relaxed = null; S.gaveUp = false;
+      var now = Recall.clueTypes(S.clues);
+      log("clues_submitted", { clue_types: now, new_types: now.filter(function (t) { return before.indexOf(t) < 0; }), count: Recall.chips(S.clues).length, turn: S.turns, degraded: !!meta.degraded });
+      if (meta.people_named) S.notes.push("I can't recognize specific people yet, so I'm using the rest of what you said. Anything else you remember?");
+      if (meta.unresolved_anchor) S.notes.push("Roughly when was “" + meta.unresolved_anchor + "”? A year or season is enough.");
+      if (meta.degraded) S.notes.push("The language model is busy, so I searched on your exact words.");
+      S.question = null;                                  // they typed instead of answering: treat it as a new clue
+      runSearch(); render(); window.scrollTo(0, 0);
+    });
+  }
+
+  function notHere() {
+    S.results.forEach(function (r) { S.rejected[r.photo.photo_id] = 1; });
+    S.misses += 1; S.more = 0; S.notes = []; S.relaxed = null; S.steered = true;
+    if (S.misses >= 2 && S.misses % 2 === 0) {            // a confident detail may be wrong: loosen it and say so
+      var r = Recall.relax(S.clues);
+      if (r) { S.relaxed = { dropped: r.dropped, undo: S.clues }; S.clues = r.state; log("clue_relaxed", { turn: S.turns }); }
+    }
+    var q = S.questions < MAX_QUESTIONS ? Recall.nextQuestion(S.pool, S.clues, S.asked) : null;
+    if (q) { S.question = q; S.asked[q.key] = 1; S.questions += 1; log("question_asked", { question_type: q.key, turn: S.turns }); }
+    else if (S.questions >= MAX_QUESTIONS || S.misses >= 5) { S.gaveUp = true; log("not_in_library", { turn: S.turns, misses: S.misses }); }
+    runSearch(); render(); window.scrollTo(0, 0);
+  }
+  function answer(delta) {
+    var key = S.question.key;
+    S.question = null; S.turns += 1;
+    if (delta) S.clues = Recall.merge(S.clues, delta);
+    log("question_answered", { question_type: key, answered: !!delta, turn: S.turns });
+    runSearch(); render(); window.scrollTo(0, 0);
+  }
+  function closeLike(pid) {
+    S.near = pid; S.turns += 1; S.more = 0; S.notes = []; S.relaxed = null; S.steered = true; S.question = null;
+    S.results.forEach(function (r) { if (r.photo.photo_id !== pid) S.rejected[r.photo.photo_id] = 1; });
+    log("near_miss_used", { photo_id: pid, turn: S.turns });
+    runSearch(); render(); window.scrollTo(0, 0);
+  }
+  function confirm(pid) {
+    var rank = null;
+    S.results.forEach(function (r, i) { if (r.photo.photo_id === pid) rank = i + 1; });
+    S.found = pid;
+    log("photo_confirmed", { photo_id: pid, rank: rank, turn: S.turns, elapsed_s: Math.round((Date.now() - (S.t0 || Date.now())) / 1000), questions: S.questions, used_near_miss: S.near !== null });
+    render(); window.scrollTo(0, 0);
+  }
+
+  // ------------------------------------------------------------------ rendering
+  function steps() {
+    var cur = S.found ? 5 : !S.turns ? 1 : (S.steered || S.question || S.near) ? 4 : 3;
+    document.getElementById("steps").innerHTML = ["Describe", "Check", "Scan", "Steer"].map(function (n, i) {
+      var k = i + 1, cls = k === cur ? "on" : k < cur ? "done" : "";
+      return (i ? '<i class="dash"></i>' : "") + '<div class="step ' + cls + '"' + (k === cur ? ' aria-current="step"' : "") + "><b>" + (k < cur ? "✓" : k) + "</b><span>" + n + "</span></div>";
+    }).join("");
+  }
+  function notesHtml() { return S.notes.map(function (n) { return '<div class="banner grey">' + ic("info") + "<span>" + esc(n) + "</span></div>"; }).join(""); }
+
+  function describeView() {
+    var picks = [], seen = {};
+    L.photos.forEach(function (p) {
+      if (picks.length < 3 && p.type === "photo" && p.people_count === 0 && p.indoor === false && !seen[p.episode_id]) { seen[p.episode_id] = 1; picks.push(p); }
+    });
+    return '<div class="hero"><h1>Describe the photo you’re looking for</h1>' +
+      '<p class="sub">Say whatever you remember: what was in it, roughly when, where, or why you took it. Vague is fine.</p>' +
+      notesHtml() +
+      '<form class="card ask" id="askform"><label for="ask" style="position:absolute;left:-9999px">What do you remember?</label>' +
+      '<textarea id="ask" maxlength="400" placeholder="e.g. that menu card I photographed at a café, some time last year…"' + (S.busy ? " disabled" : "") + ">" + esc(S.pending || "") + "</textarea>" +
+      '<div class="askrow"><span class="hint">' + (S.busy ? "Working out what you remember…" : "Press Enter to search") + "</span>" +
+      '<button class="btn" type="submit"' + (S.busy ? " disabled" : "") + ">" + ic("search") + "Find</button></div></form>" +
+      '<div class="cap"><span>Or start with an example</span><em>Tap to try</em></div><div class="ex">' +
+      EXAMPLES.map(function (e) { return '<button type="button" data-ex="' + esc(e) + '"><span class="dot">' + ic("img") + "</span>" + esc(e) + "</button>"; }).join("") + "</div>" +
+      '<div class="cap"><span>From this sample library (' + L.photos.length + " photos)</span></div><div class=\"strip\">" +
+      picks.map(function (p) { return '<img src="' + thumb(p.photo_id) + '" alt="' + esc(p.setting || "Sample photo") + '" loading="lazy">'; }).join("") + "</div>" +
+      '<p class="note">' + ic("info") + "<span>This searches a sample library, not your Google Photos account.</span></p></div>";
+  }
+
+  function understood(removable) {
+    var chips = Recall.chips(S.clues);
+    return '<section class="card"><div class="uhead"><h2>' + ic("spark") + "What I understood</h2>" +
+      (removable ? '<button class="link" type="button" id="addbtn">' + ic("plus") + "Add a detail</button>" : "") + '</div><div class="chips">' +
+      (chips.length ? chips.map(function (c) {
+        return '<span class="chip' + (removable ? "" : " plain") + '"><small>' + esc(c.label) + ":</small>" + esc(c.value) +
+          (removable ? '<button type="button" aria-label="Remove ' + esc(c.label + ": " + c.value) + '" data-chip="' + esc(c.key) + '" data-idx="' + (c.idx === null ? "" : c.idx) + '">' + ic("x") + "</button>" : "") + "</span>";
+      }).join("") : '<span style="color:var(--ink2)">No details yet. Add one to search.</span>') + "</div>" +
+      (S.adding && removable ? '<form class="add" id="addform"><input id="addinput" maxlength="400" placeholder="Add anything else you remember…" aria-label="Add a detail"' + (S.busy ? " disabled" : "") + ">" +
+        '<button class="btn" type="submit"' + (S.busy ? " disabled" : "") + ">" + (S.busy ? "Adding…" : "Add") + "</button></form>" : "") + "</section>";
+  }
+
+  function reason(r) {
+    var p = r.photo, bits = r.why.slice();
+    if (!bits.length) bits.push(p.setting || "similar description");
+    var dated = bits.some(function (b) { return /^[A-Z][a-z]{2} \d{4}$/.test(b); });
+    if (!dated) bits.push(p.date_confidence === "high" ? Recall.monthYear(p._dt) : "date unknown");
+    return bits.join(" · ");
+  }
+  function tile(r) {
+    var p = r.photo, id = esc(p.photo_id);
+    var yes = '<button class="act yes" type="button" data-yes="' + id + '">' + ic("check") + "This is it</button>";
+    var near = '<button class="act near" type="button" data-near="' + id + '">' + ic("tune") + "Close, like this</button>";
+    return '<div class="tile"><div class="ph"><img src="' + thumb(p.photo_id) + '" alt="' + esc(p.caption).slice(0, 160) + '" loading="lazy">' +
+      '<div class="over">' + yes + near + '</div></div><p class="why">' + esc(reason(r)) + '</p><div class="under">' + yes +
+      near.replace("act near", "act near\" style=\"border:1px solid var(--line)") + "</div></div>";
+  }
+  function groupsHtml() {
+    var counts = {}, groups = [], byKey = {}, singles = [];
+    S.results.forEach(function (r) { counts[r.photo.episode_id] = (counts[r.photo.episode_id] || 0) + 1; });
+    S.results.forEach(function (r) {
+      var e = r.photo.episode_id;
+      if (counts[e] < 2) return singles.push(r);
+      if (!byKey[e]) { byKey[e] = { ep: L.episodes[e] || {}, items: [] }; groups.push(byKey[e]); }
+      byKey[e].items.push(r);
+    });
+    var html = groups.map(function (g, i) {
+      var e = g.ep, a = Date.parse(e.start_at + "Z"), b = Date.parse(e.end_at + "Z");
+      var date = e.ungrouped ? Recall.monthYear(a) + ", no camera date" : Recall.fullDate(a) + (Recall.fullDate(a) !== Recall.fullDate(b) ? " to " + Recall.fullDate(b) : "");
+      return '<section class="card"><div class="ghead"><div class="gtitle"><h3>' + esc(Recall.episodeTitle(e) || "Occasion") + "</h3>" +
+        (i === 0 ? '<span class="best">' + ic("check") + "Best match</span>" : "") + '</div><div class="gmeta"><span>' + esc(date) + "</span><i></i><span>" +
+        (e.photo_ids || []).length + ' photos</span></div></div><div class="grid">' + g.items.map(tile).join("") + "</div></section>";
+    }).join("");
+    if (singles.length) html += '<section class="card"><div class="ghead"><div class="gtitle"><h3>' + (groups.length ? "Other single photos" : "Closest photos") +
+      '</h3></div></div><div class="grid">' + singles.map(tile).join("") + "</div></section>";
+    return html;
+  }
+
+  function resultsView() {
+    var html = understood(true) + notesHtml();
+    if (S.relaxed) html += '<div class="banner amber">' + ic("info") + "<span>Nothing matched well, so I looked beyond <b>“" + esc(S.relaxed.dropped) +
+      '”</b>. Memories of details like this are often a little off.</span><button class="link" type="button" id="undo">Undo</button></div>';
+    if (S.near && L.byId[S.near] && !S.gaveUp) {
+      var e = L.episodes[L.byId[S.near].episode_id] || {};
+      html += '<div class="banner blue"><img src="' + thumb(S.near) + '" alt="The photo you picked"><span>Showing photos close to the one you picked' +
+        (e.label && !e.ungrouped ? ": same occasion (“" + esc(Recall.episodeTitle(e)) + "”) and similar content." : ": similar content and dates.") + "</span></div>";
+    }
+    if (S.gaveUp) {
+      var eps = Object.keys(L.episodes).map(function (k) { return L.episodes[k]; }).filter(function (e) { return (e.photo_ids || []).length >= 2 && !e.ungrouped; })
+        .sort(function (a, b) { return a.start_at < b.start_at ? 1 : -1; });
+      return html + '<section class="card gone"><h2>This photo may not be in this library</h2>' +
+        "<p>I tried your details and loosened them, and nothing fits. It may have been deleted, never backed up, or saved somewhere else.</p>" +
+        '<div class="rowb" style="margin-top:0"><button class="btn" type="button" id="again">Try a different description</button>' +
+        '<button class="btn ghost" type="button" id="addbtn2">' + ic("plus") + "Add another detail</button></div>" +
+        '<div class="cap" style="margin-left:0"><span>Or browse by occasion</span></div><div class="eps">' +
+        eps.map(function (e) { return '<button type="button" data-ep="' + esc(e.episode_id) + '">' + esc(e.label) + " (" + e.photo_ids.length + ")</button>"; }).join("") + "</div></section>";
+    }
+    if (S.question) {
+      html += '<section class="card q"><div class="qtop"><span class="qtag">One quick question</span><span>Question ' + S.questions + " of " + MAX_QUESTIONS + " at most</span></div>" +
+        '<h2><span class="qmark">' + ic("help") + "</span>" + esc(S.question.text) + '</h2><div class="opts">' +
+        S.question.options.map(function (o, i) { return '<button class="opt" type="button" data-opt="' + i + '">' + esc(o[0]) + "</button>"; }).join("") +
+        '<button class="opt unsure" type="button" data-opt="skip">Not sure, skip</button></div></section>';
+    }
+    html += '<div class="' + (S.question ? "dim" : "") + '"' + (S.question ? ' aria-hidden="true"' : "") + ">" + groupsHtml() + "</div>";
+    if (!S.question && S.results.length) html += '<div class="foot"><button class="btn soft" type="button" id="none">' + ic("help") + "None of these</button>" +
+      "<p>I’ll ask at most one quick question to narrow the search.</p>" +
+      '<button class="link" type="button" id="more">Show more like these</button></div>';
+    return html;
+  }
+
+  function foundView() {
+    var p = L.byId[S.found], e = L.episodes[p.episode_id] || {}, chips = Recall.chips(S.clues);
+    return '<section class="card found"><img src="' + thumb(p.photo_id) + '" alt="' + esc(p.caption).slice(0, 160) + '"><div>' +
+      '<span class="ok">' + ic("check") + "Found it.</span>" +
+      "<p><b>" + esc(e.ungrouped ? "Saved or received image" : Recall.episodeTitle(e) || "Photo") + "</b>" +
+      (p.date_confidence === "high" ? " · " + esc(Recall.fullDate(p._dt)) : " · date unknown") + "</p>" +
+      "<p>Found in " + S.turns + " step" + (S.turns === 1 ? "" : "s") + (chips.length ? ", using: " + esc(chips.slice(0, 6).map(function (c) { return c.value; }).join(" · ")) : "") + "</p>" +
+      '<div class="rowb"><button class="btn" type="button" id="another">' + ic("search") + "Search for another photo</button>" +
+      '<button class="btn ghost" type="button" id="notit">Not the right one</button></div></div></section>';
+  }
+
+  function render() {
+    steps();
+    view.innerHTML = S.found ? foundView() : !S.turns ? describeView() : resultsView();
+    var ask = document.getElementById("ask"), add = document.getElementById("addinput");
+    if (add) add.focus(); else if (ask && !S.busy && window.matchMedia("(hover:hover)").matches) ask.focus();
+  }
+
+  // ------------------------------------------------------------------ events
+  document.getElementById("restart").addEventListener("click", function () { reset(true); render(); window.scrollTo(0, 0); });
+  view.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (ev.target.id === "askform") submit(document.getElementById("ask").value);
+    if (ev.target.id === "addform") { var v = document.getElementById("addinput").value; if (v.trim()) submit(v); }
+  });
+  view.addEventListener("keydown", function (ev) {
+    if (ev.target.id === "ask" && ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); submit(ev.target.value); }
+  });
+  view.addEventListener("click", function (ev) {
+    var b = ev.target.closest("button");
+    if (!b || !view.contains(b)) return;
+    var d = b.dataset;
+    if (d.ex) return submit(d.ex);
+    if (d.yes) return confirm(d.yes);
+    if (d.near) return closeLike(d.near);
+    if (d.chip) { S.clues = Recall.removeChip(S.clues, d.chip, d.idx === "" ? null : +d.idx); S.relaxed = null; log("clue_removed", { key: d.chip, turn: S.turns }); runSearch(); return render(); }
+    if (d.opt) return answer(d.opt === "skip" ? null : S.question.options[+d.opt][1]);
+    if (d.ep) {
+      var e = L.episodes[d.ep];
+      S.clues = Recall.merge(Recall.empty(), { episode_hint: Recall.episodeTitle(e) }); S.rejected = {}; S.gaveUp = false; S.near = e.photo_ids[0]; S.question = null; S.relaxed = null;
+      log("occasion_browsed", { episode_id: d.ep, turn: S.turns }); runSearch(); render(); return window.scrollTo(0, 0);
+    }
+    if (b.id === "addbtn" || b.id === "addbtn2") { S.adding = true; S.gaveUp = b.id === "addbtn2" ? false : S.gaveUp; return render(); }
+    if (b.id === "none") return notHere();
+    if (b.id === "more") { S.more += 1; runSearch(); return render(); }
+    if (b.id === "undo") { S.clues = S.relaxed.undo; S.relaxed = null; runSearch(); return render(); }
+    if (b.id === "again" || b.id === "another") { reset(b.id === "again"); render(); return window.scrollTo(0, 0); }
+    if (b.id === "notit") { log("confirmation_undone", { photo_id: S.found }); S.rejected[S.found] = 1; S.found = null; S.steered = true; runSearch(); return render(); }
+  });
+  window.PhotoRecallEvents = function () { return EVENTS.slice(); };       // for exporting a session's events from the console
+
+  fetch("library.json").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (data) {
+    L = new Recall.Library(data);
+    document.getElementById("libpill").textContent = "Sample library · " + L.photos.length + " photos";
+    reset(false); render();
+  }).catch(function () { view.innerHTML = '<p class="load">The sample library could not be loaded. Please refresh the page.</p>'; });
+})();
+</script>
+</body>
+</html>
